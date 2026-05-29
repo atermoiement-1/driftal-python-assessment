@@ -93,7 +93,7 @@ I would build the pipeline as a scheduled extraction job with checkpoints. The P
 
 For memory efficiency, I would avoid loading all 500,000 records at once. The job should stream or page through records, process batches like 5,000 or 10,000 rows, and write each batch to compressed files such as CSV or Parquet. This keeps memory predictable and also makes retries easier because failed batches can be retried separately.
 
-Retry strategy should separate transient and permanent failures. Network timeouts, rate limits, and 5xx responses can use exponential backoff with jitter. Validation failures should not be retried blindly; they should go to a rejection table or file with the exact reason. Each run should have a run id, batch id, source timestamp, and status.
+Retry strategy should separate transient and permanent failures. Network timeouts, rate limits, and 500 responses can use exponential backoff with jitter. Validation failures should not be retried blindly; they should go to a rejection table or file with the exact reason. Each run should have a run id, batch id, source timestamp, and status.
 
 Duplicate detection can be handled using a business key such as employee id plus effective date or last modified timestamp. In Snowflake, I would load into a staging table first, then merge into the final table. The merge can update changed employees and ignore exact duplicates. A hash of important fields is useful to detect whether a record actually changed.
 
@@ -101,7 +101,7 @@ Monitoring should cover row counts, rejected row count, API latency, retry count
 
 Credentials should be stored in a secrets manager, not in code or config files. API credentials and Snowflake credentials should be rotated regularly. Snowflake access should use least privilege, ideally with a dedicated service role that can load and merge only the needed tables.
 
-For scalability, the pipeline can split work by page, department, region, or last modified time window. Snowflake loading should use staged files instead of row-by-row inserts. If volume increases beyond daily batch needs, the same design can move toward event-based ingestion or more frequent incremental runs.
+For scalability, the pipeline can split work by page, department, region, or last modified time window. Snowflake loading should use staged files instead of row by row inserts. If volume increases beyond daily batch needs, the same design can move toward event-based ingestion or more frequent incremental runs.
 
 ## Section 5 - Code Review
 
@@ -136,8 +136,8 @@ for i in range(10000):
 
 ## Section 6 - AI Usage Reflection
 
-1. I used ChatGPT/Codex to help structure the solution, identify edge cases, and draft tests.
+1. I used ChatGPT to help structure the solution, identify edge cases, and draft tests.
 2. AI generated the first version of the Python module, tests, and written notes.
 3. I reviewed the assignment requirements, checked the generated approach, and would adjust naming, assumptions, and examples before final submission.
-4. The main risk with AI is that it can over-engineer small tasks or miss company-specific assumptions. I checked for that by keeping the implementation small and testable.
-5. With another day, I would add more realistic integration tests, configure structured JSON logging, and add a small command-line runner for the employee processing and user sync flows.
+4. The main risk with AI is that it can over engineer small tasks or miss company specific assumptions. I checked for that by keeping the implementation small and testable.
+5. With another day, I would add more realistic integration tests, configure structured JSON logging, and add a small command line runner for the employee processing and user sync flows.
